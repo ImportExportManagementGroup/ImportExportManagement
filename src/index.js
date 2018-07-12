@@ -10,9 +10,32 @@ import fetch from 'node-fetch';
 
 ReactDOM.render(<Header/>, document.getElementById('header'));
 // ReactDOM.render(<App />, document.getElementById('root'));
+function openWindow() {
+    var i, l, options = [{
+       value: 'first',
+       text: 'First'
+    }, {
+       value: 'second',
+       text: 'Second'
+    }],
+    newWindow = window.open("", null, "height=200,width=400,status=yes,toolbar=no,menubar=no,location=no");
+
+    newWindow.document.write("<select onchange='window.opener.setValue(this.value);'>");
+    for(i=0,l=options.length; i<l; i++) {
+        newWindow.document.write("<option value='"+options[i].value+"'>");
+        newWindow.document.write(options[i].text);
+        newWindow.document.write("</option>");
+    }
+    newWindow.document.write("</select>");
+}
+
+function setValue(value) {
+    document.getElementById('value').value = value;
+}
 
 for (var i = 1 ; i < 2; i++){
   var currentItem = document.getElementById('item'+i)
+  var currentData=1;
   currentItem.setAttribute('number',i);
   function construct() {
     var sqlQuery = "SELECT * FROM Stock WHERE object_id = " + i;
@@ -35,15 +58,51 @@ for (var i = 1 ; i < 2; i++){
     .then(res => res.json())
     .then(res => res.item)
     .then(res => res[0])
-    // return <Catalog/>;
+    .then(res => {
+      currentData=res;
+      var item = new Item(res.object_id,res.picture_id,res.date_in,res.date_out,res.number_in_stock);
+      console.log(item);
+      ReactDOM.render(
+        <div id="wrap" >
+          <h1>
+            This is an Item {item.getObjectId()}
+          </h1>
+          <img src="./dog.jpg"/>
+          <ul>
+            <li>
+              Current number in stock is {item.getNumberInStock()}
+            </li>
+            <li>
+              date in is {item.getDateIn()}
+            </li>
+            <li>
+              date out is {item.getDateOut()}
+            </li>
+            <li>
+              <button className="runbutton" onClick={item.handleChangeClick}>{item.state.change}</button>
+            </li>
+            <li>
+              <button className="runbutton" onClick={item.handleAddClick}>{item.state.add}</button>
+            </li>
+            <li>
+              <button className="runbutton" onClick={item.handleCheckingClick}>{item.state.check}</button>
+            </li>
+            <li>
+              <button id="pop" onClick={item.handleCheckingClick}>{item.state.check}</button>
+            </li>
+          </ul>
+        </div>, currentItem);
+    })
   }
-  ReactDOM.render(construct(), currentItem);
+  construct();
 }
 ReactDOM.render(<Footer/>, document.getElementById('footer'));
 ReactDOM.render(<Catalog/>, document.getElementById('catalog'));
 registerServiceWorker();
 
 
+// ReactDOM.render(<Footer/>, document.getElementById('button'));
+// document.getElementById("button").addEventListener("click", tick(), false);
 
 function tick() {
   const element = (
